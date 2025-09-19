@@ -1,0 +1,138 @@
+#include <stdio.h>
+#include <string.h>
+
+struct File {
+    char fname[20];
+};
+
+struct Directory {
+    char dname[20];
+    struct File files[10];  // Each directory can have max 10 files
+    int fcount;             // Number of files
+} dir[10];                  // Max 10 users/directories
+
+int main() {
+    int dcount = 0, choice;
+    char d[20], f[20];
+    
+    while (1) {
+        printf("\n--- Two Level Directory Structure ---\n");
+        printf("1. Create User Directory\n");
+        printf("2. Create File\n");
+        printf("3. Delete File\n");
+        printf("4. Search File\n");
+        printf("5. Display Directory\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1: // Create user directory
+            if (dcount >= 10) {
+                printf("Max user directories reached!\n");
+            } else {
+                printf("Enter user name: ");
+                scanf("%s", dir[dcount].dname);
+                dir[dcount].fcount = 0;
+                dcount++;
+                printf("User directory created.\n");
+            }
+            break;
+
+        case 2: // Create file
+            printf("Enter user name: ");
+            scanf("%s", d);
+            int found = 0;
+            for (int i = 0; i < dcount; i++) {
+                if (strcmp(dir[i].dname, d) == 0) {
+                    found = 1;
+                    if (dir[i].fcount >= 10) {
+                        printf("File limit reached for user %s.\n", d);
+                    } else {
+                        printf("Enter file name: ");
+                        scanf("%s", dir[i].files[dir[i].fcount].fname);
+                        dir[i].fcount++;
+                        printf("File created.\n");
+                    }
+                    break;
+                }
+            }
+            if (!found) printf("User directory not found!\n");
+            break;
+
+        case 3: // Delete file
+            printf("Enter user name: ");
+            scanf("%s", d);
+            found = 0;
+            for (int i = 0; i < dcount; i++) {
+                if (strcmp(dir[i].dname, d) == 0) {
+                    found = 1;
+                    printf("Enter file name to delete: ");
+                    scanf("%s", f);
+                    int ffound = 0;
+                    for (int j = 0; j < dir[i].fcount; j++) {
+                        if (strcmp(dir[i].files[j].fname, f) == 0) {
+                            printf("File %s deleted.\n", f);
+                            strcpy(dir[i].files[j].fname, dir[i].files[dir[i].fcount-1].fname);
+                            dir[i].fcount--;
+                            ffound = 1;
+                            break;
+                        }
+                    }
+                    if (!ffound) printf("File not found!\n");
+                    break;
+                }
+            }
+            if (!found) printf("User directory not found!\n");
+            break;
+
+        case 4: // Search file
+            printf("Enter user name: ");
+            scanf("%s", d);
+            found = 0;
+            for (int i = 0; i < dcount; i++) {
+                if (strcmp(dir[i].dname, d) == 0) {
+                    found = 1;
+                    printf("Enter file name to search: ");
+                    scanf("%s", f);
+                    int ffound = 0;
+                    for (int j = 0; j < dir[i].fcount; j++) {
+                        if (strcmp(dir[i].files[j].fname, f) == 0) {
+                            printf("File %s found in user %s's directory.\n", f, d);
+                            ffound = 1;
+                            break;
+                        }
+                    }
+                    if (!ffound) printf("File not found!\n");
+                    break;
+                }
+            }
+            if (!found) printf("User directory not found!\n");
+            break;
+
+        case 5: // Display
+            if (dcount == 0) {
+                printf("No user directories available.\n");
+            } else {
+                for (int i = 0; i < dcount; i++) {
+                    printf("User: %s\n", dir[i].dname);
+                    if (dir[i].fcount == 0) {
+                        printf("  No files\n");
+                    } else {
+                        for (int j = 0; j < dir[i].fcount; j++) {
+                            printf("  %s\n", dir[i].files[j].fname);
+                        }
+                    }
+                }
+            }
+            break;
+
+        case 6:
+            printf("Exiting...\n");
+            return 0;
+
+        default:
+            printf("Invalid choice!\n");
+        }
+    }
+}
