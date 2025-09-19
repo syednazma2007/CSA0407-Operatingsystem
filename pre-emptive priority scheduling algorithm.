@@ -1,0 +1,72 @@
+#include <stdio.h>
+
+struct Process {
+    int pid;       // Process ID
+    int bt;        // Burst Time
+    int at;        // Arrival Time
+    int priority;  // Priority (lower number = higher priority)
+    int wt;        // Waiting Time
+    int tat;       // Turnaround Time
+    int rt;        // Remaining Time
+    int completed; // Completion status
+};
+
+int main() {
+    int n, i, t = 0, completed = 0;
+    float total_wt = 0, total_tat = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        printf("Enter Arrival Time, Burst Time, Priority for P%d: ", p[i].pid);
+        scanf("%d %d %d", &p[i].at, &p[i].bt, &p[i].priority);
+        p[i].rt = p[i].bt;  // initialize remaining time
+        p[i].completed = 0;
+    }
+
+    printf("\nGantt Chart: ");
+    while (completed != n) {
+        int idx = -1;
+        int min_priority = 9999;
+
+        for (i = 0; i < n; i++) {
+            if (p[i].at <= t && p[i].completed == 0 && p[i].priority < min_priority && p[i].rt > 0) {
+                min_priority = p[i].priority;
+                idx = i;
+            }
+        }
+
+        if (idx != -1) {
+            printf("| P%d ", p[idx].pid);
+            p[idx].rt--;
+
+            if (p[idx].rt == 0) {
+                p[idx].completed = 1;
+                completed++;
+                int ct = t + 1;              // Completion Time
+                p[idx].tat = ct - p[idx].at; // Turnaround Time
+                p[idx].wt = p[idx].tat - p[idx].bt; // Waiting Time
+
+                total_wt += p[idx].wt;
+                total_tat += p[idx].tat;
+            }
+        }
+        t++;
+    }
+    printf("|\n");
+
+    printf("\nProcess\tAT\tBT\tPriority\tWT\tTAT\n");
+    for (i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t\t%d\t%d\n", p[i].pid, p[i].at, p[i].bt,
+               p[i].priority, p[i].wt, p[i].tat);
+    }
+
+    printf("\nAverage Waiting Time = %.2f", total_wt / n);
+    printf("\nAverage Turnaround Time = %.2f\n", total_tat / n);
+
+    return 0;
+}
