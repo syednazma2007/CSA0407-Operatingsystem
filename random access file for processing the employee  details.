@@ -1,0 +1,109 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure for Employee
+struct Employee {
+    int id;
+    char name[30];
+    float salary;
+};
+
+int main() {
+    FILE *fp;
+    struct Employee emp;
+    int choice, id, found;
+    long pos;
+
+    // Open file in binary read/write mode
+    fp = fopen("employee.dat", "rb+");
+    if (fp == NULL) {
+        fp = fopen("employee.dat", "wb+"); // create if not exists
+        if (fp == NULL) {
+            printf("Error opening file!\n");
+            exit(1);
+        }
+    }
+
+    while (1) {
+        printf("\n--- Employee Management (Random Access File) ---\n");
+        printf("1. Add Employee\n");
+        printf("2. Display All Employees\n");
+        printf("3. Search Employee by ID\n");
+        printf("4. Update Employee Salary\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1: // Add Employee
+            printf("Enter Employee ID: ");
+            scanf("%d", &emp.id);
+            printf("Enter Employee Name: ");
+            scanf("%s", emp.name);
+            printf("Enter Employee Salary: ");
+            scanf("%f", &emp.salary);
+
+            fseek(fp, 0, SEEK_END);  // Move to end for appending
+            fwrite(&emp, sizeof(emp), 1, fp);
+            printf("Employee added successfully.\n");
+            break;
+
+        case 2: // Display all
+            rewind(fp);  // Move to beginning
+            printf("\nEmployee Records:\n");
+            while (fread(&emp, sizeof(emp), 1, fp) == 1) {
+                printf("ID: %d | Name: %s | Salary: %.2f\n", emp.id, emp.name, emp.salary);
+            }
+            break;
+
+        case 3: // Search
+            printf("Enter Employee ID to search: ");
+            scanf("%d", &id);
+            rewind(fp);
+            found = 0;
+            while (fread(&emp, sizeof(emp), 1, fp) == 1) {
+                if (emp.id == id) {
+                    printf("Employee Found: ID=%d, Name=%s, Salary=%.2f\n", emp.id, emp.name, emp.salary);
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) printf("Employee with ID %d not found.\n", id);
+            break;
+
+        case 4: // Update
+            printf("Enter Employee ID to update salary: ");
+            scanf("%d", &id);
+            rewind(fp);
+            found = 0;
+            while (fread(&emp, sizeof(emp), 1, fp) == 1) {
+                if (emp.id == id) {
+                    printf("Current Salary: %.2f\n", emp.salary);
+                    printf("Enter New Salary: ");
+                    scanf("%f", &emp.salary);
+
+                    // Go back one record position
+                    pos = ftell(fp) - sizeof(emp);
+                    fseek(fp, pos, SEEK_SET);
+                    fwrite(&emp, sizeof(emp), 1, fp);
+                    printf("Salary updated successfully.\n");
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) printf("Employee with ID %d not found.\n", id);
+            break;
+
+        case 5:
+            fclose(fp);
+            printf("Exiting...\n");
+            exit(0);
+
+        default:
+            printf("Invalid choice!\n");
+        }
+    }
+
+    return 0;
+}
